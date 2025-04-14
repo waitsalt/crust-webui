@@ -8,7 +8,7 @@ export const useSettingStore = defineStore("setting", () => {
     user: {
       seed: "angry heavy speed build derive buffalo service page indoor crunch pioneer ritual",
       token:
-        "c3Vic3RyYXRlLWNUS0Vkbm5uUWdKY1V2eDZ4QXdGV2hlcTZLcXk4b3lwQUdrV3ZteWhTUVRWTnVvYXU6MHhmZWMwYzRiMTk3NjQ2YmMyYjVkNjVlNTFiNTM1YjI3NzgzZjc3OGQ4NGNmMGRhZjg0OGVjOWY0OTc0NGY3MzBjODUzYjQ4ODVhYjE2YjIxYmVmYmQ0MGFkMTg2YmZlYjE0ODYxODc5ZTAyMDljYWE2NDllZTU3M2U0NmExMzg4Zg==",
+        "c3Vic3RyYXRlLWNUS0Vkbm5uUWdKY1V2eDZ4QXdGV2hlcTZLcXk4b3lwQUdrV3ZteWhTUVRWTnVvYXU6MHg2ZWNjOWMwZWZiNTc2Y2NiMjE5ZWJkNzJjYmExYzA3YmJkOGEwMTcyZmQ4NGNlM2Y3MTQ4MThjODhjMjZhOTdmNWRkZTAwZGQwMzY3MjJhODA1NjUxMjg2OWRiYjU0OGY4MTNiNzUyY2E1NmE5MDc1ODU2OTA5MjIzMjEyMWU4OA==",
     },
     server: {
       pin: {
@@ -48,19 +48,39 @@ export const useSettingStore = defineStore("setting", () => {
       size: 0,
       created: Date.now(),
       children: [
-        {
-          type: "folder",
-          name: "root",
-          size: 0,
-          created: Date.now(),
-          children: [{
-            type: "folder",
-            name: "root",
-            size: 0,
-            created: Date.now(),
-            children: [],
-          }],
-        }
+        // {
+        //   type: "folder",
+        //   name: "root",
+        //   size: 0,
+        //   created: Date.now(),
+        //   children: [{
+        //     type: "folder",
+        //     name: "root",
+        //     size: 0,
+        //     created: Date.now(),
+        //     children: [],
+        //   }],
+        // }, {
+        //   type: "folder",
+        //   name: "root2",
+        //   size: 0,
+        //   created: Date.now(),
+        //   children: [
+        //     {
+        //       type: "folder",
+        //       name: "root",
+        //       size: 0,
+        //       created: Date.now(),
+        //       children: [{
+        //         type: "folder",
+        //         name: "root",
+        //         size: 0,
+        //         created: Date.now(),
+        //         children: [],
+        //       }],
+        //     }
+        //   ],
+        // }
       ],
     },
   });
@@ -69,7 +89,7 @@ export const useSettingStore = defineStore("setting", () => {
     setting.value = newSetting;
   }
 
-  function getStorageItem(fullPath: string): StorageItem | undefined {
+  function getStorageItem(fullPath: string): StorageItem | null {
     const pathItemList = fullPath
       .split("/")
       .filter((pathItem) => pathItem !== "");
@@ -78,12 +98,13 @@ export const useSettingStore = defineStore("setting", () => {
     for (let index = 0; index < pathItemList.length - 1; index++) {
       const pathItem = pathItemList[index];
       const child = current.children.find((child) => child.name === pathItem);
-      if (!child || child.type !== "folder") return undefined;
+      if (!child || child.type !== "folder") return null;
       current = child;
     }
     const result = current.children.find(
       (child) => child.name === pathItemList[pathItemList.length - 1],
     );
+    if (result === undefined) return null;
     return result;
   }
 
@@ -100,7 +121,7 @@ export const useSettingStore = defineStore("setting", () => {
       current.size += storageItem.size;
       return true;
     }
-    for (let index = 0; index < pathItemList.length; index++) {
+    for (let index = 0; index < pathItemList.length - 1; index++) {
       const pathItem = pathItemList[index];
       const child = current.children.find((child) => child.name === pathItem);
       if (!child) {
@@ -177,7 +198,7 @@ export const useSettingStore = defineStore("setting", () => {
     afterFolderPath: string,
   ): boolean {
     const storageItem = getStorageItem(beforeFullPath);
-    if (storageItem === undefined) return false;
+    if (storageItem === null) return false;
     const result = addStorageItem(afterFolderPath, storageItem);
     if (result === true) {
       return delStorageItem(beforeFullPath);

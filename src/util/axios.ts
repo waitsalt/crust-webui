@@ -3,7 +3,6 @@ import axios from "axios";
 
 // 普通资源
 const axiosBase = axios.create({
-  baseURL: "http://127.0.0.1:8000",
   timeout: 0,
 });
 
@@ -21,9 +20,11 @@ axiosBase.interceptors.response.use(
 );
 
 // 认证资源
-const axiosAuth = axiosBase;
+const axiosAuth = axios.create({
+  timeout: 0,
+});
 
-axiosAuth.interceptors.request.use(async (config) => {
+axiosAuth.interceptors.request.use((config) => {
   const settingStore = useSettingStore();
   const token = settingStore.setting.user.token;
   if (token !== null) {

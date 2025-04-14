@@ -6,9 +6,9 @@ const router = createRouter({
   routes: [
     {
       path: "/:path(.*)",
-      name: "home",
+      name: "存储",
       component: StorageView,
-    }
+    },
   ],
 });
 

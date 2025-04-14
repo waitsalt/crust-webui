@@ -1,10 +1,10 @@
 import { useSettingStore } from "@/store/setting";
 import { useTaskStore } from "@/store/task";
 import type { Task } from "@/type/task";
-import type { PinStatus } f../ util / axiostype / crust";
 import { getFullPath } from "@/util";
 import type { FileItem } from "@/type/setting";
 import { axiosAuth } from "@/util/axios";
+import type { PinStatus } from "@/type/crust";
 
 async function pin(task: Task) {
   if (task.upload.response === null) {
@@ -14,6 +14,18 @@ async function pin(task: Task) {
   const name = task.upload.response.Name;
   const taskStore = useTaskStore();
   const settingStore = useSettingStore();
+
+  const fullPath = getFullPath(task.path, task.content.webkitRelativePath);
+  const fileItem: FileItem = {
+    type: "file",
+    name: task.content.name,
+    size: task.content.size,
+    created: Date.now(),
+    cid: cid,
+    status: "failed",
+    requestId: "",
+  };
+
   try {
     taskStore.updatePinStatus(task.id, "start");
     const pinUrl = `https://${settingStore.setting.server.pin.use}/psa/pins`;
@@ -24,17 +36,12 @@ async function pin(task: Task) {
     taskStore.updatePinResponse(task.id, pinRes);
     taskStore.updatePinStatus(task.id, "success");
 
-    const fullPath = getFullPath(task.path, task.content.webkitRelativePath);
-    const fileItem: FileItem = {
-      type: "file",
-      name: task.content.name,
-      size: task.content.size,
-      created: Date.now(),
-      cid: cid,
-      requestId: pinRes.requestId,
-    };
+    fileItem.status = "success";
+    fileItem.requestId = pinRes.requestId;
+
     settingStore.addStorageItem(fullPath, fileItem);
   } catch {
+    settingStore.addStorageItem(fullPath, fileItem);
     taskStore.updatePinStatus(task.id, "error");
   }
 }

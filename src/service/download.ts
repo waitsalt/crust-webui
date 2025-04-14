@@ -4,7 +4,7 @@ function downloadStorageItem(path: string): boolean {
   const settingStore = useSettingStore();
   const storageItem = settingStore.getStorageItem(path);
   if (!storageItem) {
-    console.error(`Storage item not found at path: ${path}`);
+    alert(`Storage item not found at path: ${path}`);
     return false;
   } else if (storageItem.type === "file") {
     const url = `https://${settingStore.setting.server.download.use}/ipfs/${storageItem.cid}?filename=${storageItem.name}`;
@@ -12,7 +12,6 @@ function downloadStorageItem(path: string): boolean {
     return true;
   } else {
     alert("不支持文件夹下载");
-    console.error(`Cannot download directory at path: ${path}`);
     return false;
   }
 }

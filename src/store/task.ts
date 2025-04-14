@@ -5,7 +5,8 @@ import { defineStore } from "pinia";
 import { ref } from "vue";
 
 export const useTaskStore = defineStore("task", () => {
-  const pool = ref<TaskPool>(new TaskPool());
+  const uploadPool = ref<TaskPool>(new TaskPool());
+  const pinPool = ref<TaskPool>(new TaskPool());
   const taskMap = ref<Map<string, Task>>(new Map());
   const successTaskList = ref<Task[]>([]);
   const failedTaskList = ref<Task[]>([]);
@@ -45,7 +46,8 @@ export const useTaskStore = defineStore("task", () => {
   }
 
   return {
-    pool,
+    uploadPool,
+    pinPool,
     taskMap,
     successTaskList,
     failedTaskList,

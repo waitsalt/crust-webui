@@ -5,8 +5,6 @@ import type { Task } from "@/type/task";
 import { pin } from "./pin";
 import { axiosAuth } from "@/util/axios";
 
-// async function uploadStorageItem
-
 async function uploadFile(task: Task) {
   const settingStore = useSettingStore();
   const taskStore = useTaskStore();
@@ -33,15 +31,18 @@ async function uploadFile(task: Task) {
       },
     });
 
+    console.log(res)
+
     taskStore.updateUploadResponse(task.id, res);
     taskStore.updateUploadStatus(task.id, "success");
 
-    console.log(res);
+    taskStore.pinPool.add(() => pin(task));
 
-    await pin(task);
-  } catch {
+  } catch (error) {
+    console.error(error)
     taskStore.updateUploadStatus(task.id, "error");
   }
+
   if (task.pin.status === "success" && task.upload.status === "success") {
     taskStore.successTaskList.push(task);
   } else {
