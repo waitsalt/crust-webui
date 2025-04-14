@@ -31,8 +31,6 @@ async function uploadFile(task: Task) {
       },
     });
 
-    console.log(res)
-
     taskStore.updateUploadResponse(task.id, res);
     taskStore.updateUploadStatus(task.id, "success");
 
