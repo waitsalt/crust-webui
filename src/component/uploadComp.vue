@@ -39,7 +39,7 @@ const showStatus = (task: Task): string => {
         case "success":
             switch (task.pin.status) {
                 case "start":
-                    return "固定中...";
+                    return "固定中";
                 case "success":
                     return "成功";
                 case "error":

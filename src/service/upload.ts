@@ -35,18 +35,12 @@ async function uploadFile(task: Task) {
     taskStore.updateUploadStatus(task.id, "success");
 
     taskStore.pinPool.add(() => pin(task));
-
-  } catch (error) {
-    console.error(error)
+  } catch {
     taskStore.updateUploadStatus(task.id, "error");
-  }
 
-  if (task.pin.status === "success" && task.upload.status === "success") {
-    taskStore.successTaskList.push(task);
-  } else {
     taskStore.failedTaskList.push(task);
+    taskStore.taskMap.delete(task.id);
   }
-  taskStore.taskMap.delete(task.id);
 }
 
 export { uploadFile };

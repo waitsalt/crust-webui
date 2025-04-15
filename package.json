@@ -13,6 +13,7 @@
   "dependencies": {
     "axios": "^1.8.4",
     "pinia": "^3.0.2",
+    "pinia-plugin-persistedstate": "^4.2.0",
     "vue": "^3.5.13",
     "vue-icons-plus": "^0.1.8",
     "vue-router": "^4.5.0"

@@ -25,6 +25,7 @@ import {
 
 import uploadComp from "@/component/uploadComp.vue";
 import settingComp from "@/component/settingComp.vue";
+import deleteComp from "@/component/deleteComp.vue";
 
 // 基础元素
 const route = useRoute();
@@ -97,6 +98,9 @@ type functionType =
 const functionActive = ref<functionType>(null);
 const activeFunction = (choose: functionType) => {
     functionActive.value = choose;
+    if (choose === null) {
+        selectStorageItemList.value = [];
+    }
 };
 
 // 初始化
@@ -151,10 +155,10 @@ watch(
                         <div class="fileShowInfo">
                             <span class="fileShowSize">{{
                                 formatSize(currentStorageItem.size)
-                            }}</span>
+                                }}</span>
                             <span class="fileShowDate">{{
                                 formatTimestamp(currentStorageItem.created)
-                            }}</span>
+                                }}</span>
                         </div>
                     </div>
 
@@ -222,10 +226,10 @@ watch(
                                 </label>
                                 <label class="storageSize">{{
                                     formatSize(childenStorageItem.size)
-                                }}</label>
+                                    }}</label>
                                 <label class="storageUpdateTime">{{
                                     formatTimestamp(childenStorageItem.created)
-                                }}</label>
+                                    }}</label>
                             </div>
                         </div>
                     </div>
@@ -261,6 +265,9 @@ watch(
             <component :is="uploadComp" v-show="functionActive === 'upload'" />
             <component :is="settingComp" :updateCurrentStorageItem="updateCurrentStorageItem"
                 v-show="functionActive === 'setting'" />
+            <component :is="deleteComp" :updateCurrentStorageItem="updateCurrentStorageItem"
+                :selectStorageItemList="selectStorageItemList" :activeFunction="activeFunction"
+                v-show="functionActive === 'delete'" />
         </div>
     </div>
 </template>

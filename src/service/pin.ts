@@ -15,7 +15,12 @@ async function pin(task: Task) {
   const taskStore = useTaskStore();
   const settingStore = useSettingStore();
 
-  const fullPath = getFullPath(task.path, task.content.webkitRelativePath);
+  let fullPath = "";
+  if (task.content.webkitRelativePath === '') {
+    fullPath = getFullPath(task.path, task.content.name);
+  } else {
+    fullPath = getFullPath(task.path, task.content.webkitRelativePath);
+  }
   const fileItem: FileItem = {
     type: "file",
     name: task.content.name,
@@ -39,11 +44,18 @@ async function pin(task: Task) {
     fileItem.status = "success";
     fileItem.requestId = pinRes.requestId;
 
-    settingStore.addStorageItem(fullPath, fileItem);
   } catch {
-    settingStore.addStorageItem(fullPath, fileItem);
     taskStore.updatePinStatus(task.id, "error");
   }
+
+  settingStore.addStorageItem(fullPath, fileItem);
+
+  if (task.pin.status === "success" && task.upload.status === "success") {
+    taskStore.successTaskList.push(task);
+  } else {
+    taskStore.failedTaskList.push(task);
+  }
+  taskStore.taskMap.delete(task.id);
 }
 
 export { pin };
