@@ -105,10 +105,20 @@ const activeFunction = (choose: functionType) => {
     }
 };
 
+// 标题变换
+const changeTitle = () => {
+    if (currentStorageItem.value === null) {
+        document.title = `crust`;
+    } else {
+        document.title = `${currentStorageItem.value.name} | crust`;
+    }
+};
+
 // 初始化
 onMounted(async () => {
     updateCurrentStorageItem();
     updateCurrentPathItemList();
+    changeTitle();
 });
 
 // 变量监听
@@ -117,6 +127,7 @@ watch(
     async () => {
         updateCurrentStorageItem();
         updateCurrentPathItemList();
+        changeTitle();
         selectStorageItemList.value = [];
     },
 );
@@ -157,10 +168,10 @@ watch(
                         <div class="fileShowInfo">
                             <span class="fileShowSize">{{
                                 formatSize(currentStorageItem.size)
-                            }}</span>
+                                }}</span>
                             <span class="fileShowDate">{{
                                 formatTimestamp(currentStorageItem.created)
-                            }}</span>
+                                }}</span>
                         </div>
                     </div>
 
@@ -228,10 +239,10 @@ watch(
                                 </label>
                                 <label class="storageSize">{{
                                     formatSize(childenStorageItem.size)
-                                }}</label>
+                                    }}</label>
                                 <label class="storageUpdateTime">{{
                                     formatTimestamp(childenStorageItem.created)
-                                }}</label>
+                                    }}</label>
                             </div>
                         </div>
                     </div>

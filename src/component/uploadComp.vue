@@ -6,6 +6,7 @@ import type { Task } from "@/type/task";
 import { formatSize, taskFromFile } from "@/util";
 import { computed } from "vue";
 import { ref } from "vue";
+import { AiOutlineRedo, AiOutlineDelete } from "vue-icons-plus/ai";
 
 const taskStore = useTaskStore();
 const settingStore = useSettingStore();
@@ -98,6 +99,49 @@ const clearList = (type: selectPartType) => {
             break;
     }
 };
+const deleteTask = (type: selectPartType, id: string) => {
+    switch (type) {
+        case "doing":
+            taskStore.taskMap.delete(id);
+            break;
+        case "success":
+            taskStore.successTaskList = taskStore.successTaskList.filter(task => task.id !== id);
+            break;
+        case "failed":
+            taskStore.failedTaskList = taskStore.failedTaskList.filter(task => task.id !== id);
+            break;
+    }
+};
+const retryTask = (id: string) => {
+    const index = taskStore.failedTaskList.findIndex((item) => item.id === id);
+    if (index === -1) return;
+
+    const task = taskStore.failedTaskList[index];
+    taskStore.failedTaskList.splice(index, 1);
+    taskStore.taskMap.set(task.id, task);
+
+    if (task.upload.status === "error") {
+        taskStore.uploadPool.add(() => uploadFile(task))
+    } else if (task.pin.status === "error") {
+        taskStore.pinPool.add(() => uploadFile(task))
+    }
+};
+
+const retryAllTasks = () => {
+    while (taskStore.failedTaskList.length > 0) {
+        const task = taskStore.failedTaskList.pop();
+        if (task) {
+            taskStore.taskMap.set(task.id, task);
+
+            if (task.upload.status === "error") {
+                taskStore.uploadPool.add(() => uploadFile(task))
+            } else if (task.pin.status === "error") {
+                taskStore.pinPool.add(() => uploadFile(task))
+            }
+        }
+    }
+};
+
 </script>
 
 <template>
@@ -132,11 +176,17 @@ const clearList = (type: selectPartType) => {
                     </button>
                 </div>
                 <div class="rightSelection" v-show="selectionChoose === 'success'">
-                    <button class="chooseSelectionBtn" @click="clearList('success')">清空列表</button>
+                    <button class="chooseSelectionBtn" @click="clearList('success')">
+                        清空列表
+                    </button>
                 </div>
                 <div class="rightSelection" v-show="selectionChoose === 'failed'">
-                    <button class="chooseSelectionBtn">重试全部</button>
-                    <button class="chooseSelectionBtn" @click="clearList('failed')">清空列表</button>
+                    <button class="chooseSelectionBtn" @click="retryAllTasks()">
+                        重试全部
+                    </button>
+                    <button class="chooseSelectionBtn" @click="clearList('failed')">
+                        清空列表
+                    </button>
                 </div>
             </div>
         </div>
@@ -177,7 +227,14 @@ const clearList = (type: selectPartType) => {
                             {{ showStatus(task) }}
                         </span>
                     </div>
-                    <div class="showAction"></div>
+                    <div class="showAction">
+                        <button class="delAction" @click="deleteTask(selectionChoose, task.id)">
+                            <AiOutlineDelete />
+                        </button>
+                        <button class="retryAction" v-show="selectionChoose === 'failed'" @click="retryTask(task.id)">
+                            <AiOutlineRedo />
+                        </button>
+                    </div>
                 </div>
 
                 <div class="emptyState" v-if="currentTask.length === 0">
@@ -363,5 +420,25 @@ const clearList = (type: selectPartType) => {
     text-align: center;
     color: #94a3b8;
     font-size: 14px;
+}
+
+.showAction {
+    display: flex;
+}
+
+.showAction button {
+    border: none;
+    display: flex;
+    align-content: center;
+    border-radius: 10px;
+    color: #a9b1d6;
+    background-color: inherit;
+    transition: all 0.3s ease;
+}
+
+.showAction button:hover {
+    color: white;
+    background-color: #1f2335;
+    cursor: pointer;
 }
 </style>

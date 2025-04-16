@@ -14,6 +14,8 @@ async function uploadFile(task: Task) {
 
   try {
     taskStore.updateUploadStatus(task.id, "start");
+    taskStore.updatePinStatus(task.id, "wait");
+
     const uploadUrl = `https://${settingStore.setting.server.upload.use}/api/v0/add?pin=true&cid-version=1&hash=sha2-256`;
     let res: UploadFileResponse = await axiosAuth.post(uploadUrl, formData, {
       headers: {
