@@ -77,10 +77,10 @@ export const useSettingStore = defineStore(
     }
 
     function addStorageItem(
-      folderPath: string,
+      fullPath: string,
       storageItem: StorageItem,
     ): boolean {
-      const pathItemList = folderPath
+      const pathItemList = fullPath
         .split("/")
         .filter((pathItem) => pathItem !== "");
       let current = setting.value.storage;
@@ -159,15 +159,15 @@ export const useSettingStore = defineStore(
 
     function moveStorageItem(
       beforeFullPath: string,
-      afterFolderPath: string,
+      aferFullPath: string,
     ): boolean {
       const storageItem = getStorageItem(beforeFullPath);
       if (storageItem === null) return false;
-      const result = addStorageItem(afterFolderPath, storageItem);
+      const result = delStorageItem(beforeFullPath);
       if (result === true) {
-        return delStorageItem(beforeFullPath);
+        return addStorageItem(aferFullPath, storageItem);
       } else {
-        return false;
+        return addStorageItem(beforeFullPath, storageItem);
       }
     }
 

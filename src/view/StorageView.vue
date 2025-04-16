@@ -26,6 +26,8 @@ import {
 import uploadComp from "@/component/uploadComp.vue";
 import settingComp from "@/component/settingComp.vue";
 import deleteComp from "@/component/deleteComp.vue";
+import downloadComp from "@/component/downloadComp.vue";
+import MoveComp from "@/component/moveComp.vue";
 
 // 基础元素
 const route = useRoute();
@@ -155,10 +157,10 @@ watch(
                         <div class="fileShowInfo">
                             <span class="fileShowSize">{{
                                 formatSize(currentStorageItem.size)
-                                }}</span>
+                            }}</span>
                             <span class="fileShowDate">{{
                                 formatTimestamp(currentStorageItem.created)
-                                }}</span>
+                            }}</span>
                         </div>
                     </div>
 
@@ -226,10 +228,10 @@ watch(
                                 </label>
                                 <label class="storageSize">{{
                                     formatSize(childenStorageItem.size)
-                                    }}</label>
+                                }}</label>
                                 <label class="storageUpdateTime">{{
                                     formatTimestamp(childenStorageItem.created)
-                                    }}</label>
+                                }}</label>
                             </div>
                         </div>
                     </div>
@@ -242,7 +244,7 @@ watch(
                 <AiOutlineCloudUpload />
             </button>
             <button class="functionBtn" :class="{ functionBtnActive: functionActive === 'download' }"
-                :disabled="selectStorageItemList.length === 0">
+                @click="activeFunction('download')" :disabled="selectStorageItemList.length === 0">
                 <AiOutlineCloudDownload />
             </button>
             <button class="functionBtn" :class="{ functionBtnActive: functionActive === 'delete' }"
@@ -263,11 +265,16 @@ watch(
                 <AiOutlineClose />
             </button>
             <component :is="uploadComp" v-show="functionActive === 'upload'" />
+            <component :is="downloadComp" :selectStorageItemList="selectStorageItemList"
+                :activeFunction="activeFunction" v-show="functionActive === 'download'" />
             <component :is="settingComp" :updateCurrentStorageItem="updateCurrentStorageItem"
                 v-show="functionActive === 'setting'" />
             <component :is="deleteComp" :updateCurrentStorageItem="updateCurrentStorageItem"
                 :selectStorageItemList="selectStorageItemList" :activeFunction="activeFunction"
                 v-show="functionActive === 'delete'" />
+            <component :is="MoveComp" :updateCurrentStorageItem="updateCurrentStorageItem"
+                :selectStorageItemList="selectStorageItemList" :activeFunction="activeFunction"
+                v-show="functionActive === 'move'" />
         </div>
     </div>
 </template>
@@ -426,6 +433,7 @@ watch(
     display: flex;
     align-items: center;
     width: 40%;
+    gap: 5px;
 }
 
 .storageSize {
