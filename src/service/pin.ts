@@ -48,7 +48,13 @@ async function pin(task: Task) {
     taskStore.updatePinStatus(task.id, "error");
   }
 
-  settingStore.addStorageItem(fullPath, fileItem);
+  // 检查是否存在 存在则更新 不存在则新建
+  const storageItem = settingStore.getStorageItem(fullPath);
+  if (storageItem !== null) {
+    settingStore.updateStorageItem(fullPath, fileItem);
+  } else {
+    settingStore.addStorageItem(fullPath, fileItem);
+  }
 
   if (task.pin.status === "success" && task.upload.status === "success") {
     taskStore.successTaskList.push(task);

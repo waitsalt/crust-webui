@@ -215,6 +215,14 @@ export const useSettingStore = defineStore(
       return results;
     }
 
+    function updateStorageItem(fullPath: string, item: StorageItem) {
+      const storageItem = getStorageItem(fullPath);
+      if (storageItem !== null && storageItem.type === item.type) {
+        delStorageItem(fullPath);
+        addStorageItem(fullPath, item);
+      }
+    }
+
     return {
       setting,
       updateSetting,
@@ -224,6 +232,7 @@ export const useSettingStore = defineStore(
       moveStorageItem,
       searchStorageItemInFolder,
       searchStorageItem,
+      updateStorageItem,
     };
   },
   {
