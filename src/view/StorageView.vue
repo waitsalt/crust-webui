@@ -13,6 +13,7 @@ import {
     AiOutlineClose,
     AiOutlineDelete,
     AiOutlineCloudDownload,
+    AiOutlineSearch,
 } from "vue-icons-plus/ai";
 import { BsArrowsMove } from "vue-icons-plus/bs";
 import {
@@ -28,6 +29,7 @@ import settingComp from "@/component/settingComp.vue";
 import deleteComp from "@/component/deleteComp.vue";
 import downloadComp from "@/component/downloadComp.vue";
 import MoveComp from "@/component/moveComp.vue";
+import searchComp from "@/component/searchComp.vue";
 import router from "@/router";
 
 // 基础元素
@@ -42,11 +44,13 @@ const updateCurrentStorageItem = () => {
     const path = router.currentRoute.value.path;
     const storageItem = settingStore.getStorageItem(path);
     currentStorageItem.value = storageItem;
+    sortType.value = false;
+    sortStorageItem("name");
 };
 const updateCurrentPathItemList = () => {
     const path = router.currentRoute.value.path;
     const segments = path.split("/").filter((item) => item !== "");
-    const crumbs = [{ name: "home", path: "/" }]; getFullPath
+    const crumbs = [{ name: "home", path: "/" }];
 
     let accumulatedPath = "";
     for (const segment of segments) {
@@ -57,6 +61,28 @@ const updateCurrentPathItemList = () => {
         });
     }
     currentPathItemList.value = crumbs;
+};
+
+// 排序
+const sortType = ref<boolean>(true);
+// 预编译比较函数
+const comparators = {
+    name: (a: StorageItem, b: StorageItem, dir: number) =>
+        dir * (a.type === b.type ? a.name.localeCompare(b.name) : a.type === 'folder' ? -1 : 1),
+    size: (a: StorageItem, b: StorageItem, dir: number) =>
+        dir * (a.type === b.type ? a.size - b.size : a.type === 'folder' ? -1 : 1),
+    time: (a: StorageItem, b: StorageItem, dir: number) =>
+        dir * (a.type === b.type ? a.created - b.created : a.type === 'folder' ? -1 : 1)
+};
+
+const sortStorageItem = (type: "name" | "size" | "time") => {
+    if (currentStorageItem.value?.type !== 'folder') return;
+
+    sortType.value = !sortType.value;
+    const direction = sortType.value ? 1 : -1;
+
+    // 使用预编译的比较函数
+    currentStorageItem.value.children.sort((a, b) => comparators[type](a, b, direction));
 };
 
 // 选择框
@@ -106,6 +132,10 @@ const changeTitle = () => {
     } else {
         document.title = `${currentStorageItem.value.name} | crust`;
     }
+};
+
+const goPath = (path: string) => {
+    router.push(path);
 };
 
 // 初始化
@@ -162,10 +192,10 @@ watch(
                         <div class="fileShowInfo">
                             <span class="fileShowSize">{{
                                 formatSize(currentStorageItem.size)
-                                }}</span>
+                            }}</span>
                             <span class="fileShowDate">{{
                                 formatTimestamp(currentStorageItem.created)
-                                }}</span>
+                            }}</span>
                         </div>
                     </div>
 
@@ -193,14 +223,17 @@ watch(
                             <input class="storageSelect" type="checkbox" :checked="currentStorageItem.children.length ===
                                 selectStorageItemList.length
                                 " @click="selectAllStorageItem()" />
-                            <label class="storageName">名称</label>
-                            <label class="storageSize">大小</label>
-                            <label class="storageUpdateTime">修改时间</label>
+                            <label class="storageName" @click="sortStorageItem('name')">名称</label>
+                            <label class="storageSize" @click="sortStorageItem('size')"> 大小 </label>
+                            <label class="storageUpdateTime" @click="sortStorageItem('time')">修改时间</label>
                         </div>
                         <div class="storageContent">
                             <div class="childenItem" v-for="childenStorageItem in currentStorageItem.children" @click="
                                 router.push(
-                                    getFullPath(router.currentRoute.value.path, childenStorageItem.name)
+                                    getFullPath(
+                                        router.currentRoute.value.path,
+                                        childenStorageItem.name,
+                                    ),
                                 )
                                 ">
                                 <input class="storageSelect" type="checkbox" :checked="selectStorageItemList.includes(
@@ -230,10 +263,10 @@ watch(
                                 </label>
                                 <label class="storageSize">{{
                                     formatSize(childenStorageItem.size)
-                                    }}</label>
+                                }}</label>
                                 <label class="storageUpdateTime">{{
                                     formatTimestamp(childenStorageItem.created)
-                                    }}</label>
+                                }}</label>
                             </div>
                         </div>
                     </div>
@@ -241,6 +274,10 @@ watch(
             </div>
         </div>
         <div class="functionChoosePanel">
+            <button class="functionBtn" :class="{ functionBtnActive: functionActive === 'search' }"
+                @click="activeFunction('search')">
+                <AiOutlineSearch />
+            </button>
             <button class="functionBtn" :class="{ functionBtnActive: functionActive === 'upload' }"
                 @click="activeFunction('upload')" :disabled="currentStorageItem?.type === 'file'">
                 <AiOutlineCloudUpload />
@@ -266,6 +303,8 @@ watch(
             <button @click="activeFunction(null)" class="closeFunctionPanel">
                 <AiOutlineClose />
             </button>
+            <component :is="searchComp" :activeFunction="activeFunction" :goPath="goPath"
+                v-show="functionActive === 'search'" />
             <component :is="uploadComp" v-show="functionActive === 'upload'" />
             <component :is="downloadComp" :selectStorageItemList="selectStorageItemList"
                 :activeFunction="activeFunction" v-show="functionActive === 'download'" />
@@ -284,8 +323,7 @@ watch(
 <style scoped>
 .container {
     margin: 0;
-    padding: 0px 100px;
-    overflow: auto;
+    padding: 0px 100px 100px 100px;
 }
 
 .appHeader {
@@ -296,6 +334,7 @@ watch(
     align-items: center;
     height: 70px;
     top: 0;
+    background-color: #1f2335;
 }
 
 .leftSection,
@@ -330,11 +369,11 @@ watch(
 .storageContainer {
     margin: 0;
     padding: 0;
-    overflow: auto;
     font-size: 15px;
 }
 
 .storageShow {
+    overflow: auto;
     padding: 15px 20px;
     border-radius: 10px;
     background-color: #292e42;
@@ -418,12 +457,6 @@ watch(
 
 .childenItem *:hover {
     cursor: pointer;
-}
-
-.storageThead {
-    position: sticky;
-    color: #737aa2;
-    top: 0;
 }
 
 .storageSelect {
