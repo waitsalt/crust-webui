@@ -4,6 +4,8 @@ import { useTaskStore } from "@/store/task";
 import type { Task } from "@/type/task";
 import { pin } from "./pin";
 import { axiosAuth } from "@/util/axios";
+import { getFullPath } from "@/util";
+import type { FileItem } from "@/type/setting";
 
 async function uploadFile(task: Task) {
   const settingStore = useSettingStore();
@@ -35,6 +37,31 @@ async function uploadFile(task: Task) {
 
     taskStore.updateUploadResponse(task.id, res);
     taskStore.updateUploadStatus(task.id, "success");
+
+    let fullPath = "";
+    if (task.content.webkitRelativePath === '') {
+      fullPath = getFullPath(task.path, task.content.name);
+    } else {
+      fullPath = getFullPath(task.path, task.content.webkitRelativePath);
+    }
+
+    const fileItem: FileItem = {
+      type: "file",
+      name: task.content.name,
+      size: task.content.size,
+      created: Date.now(),
+      cid: "",
+      status: "failed",
+      requestId: "",
+    };
+
+    // 检查是否存在 存在则更新 不存在则新建
+    const storageItem = settingStore.getStorageItem(fullPath);
+    if (storageItem !== null) {
+      settingStore.updateStorageItem(fullPath, fileItem);
+    } else {
+      settingStore.addStorageItem(fullPath, fileItem);
+    }
 
     taskStore.pinPool.add(() => pin(task));
   } catch {

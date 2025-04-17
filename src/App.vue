@@ -15,5 +15,6 @@
     background-color: #1f2335;
     color: white;
     font-family: system-ui;
+    overflow: auto;
 }
 </style>

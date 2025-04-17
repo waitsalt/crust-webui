@@ -12,6 +12,7 @@ export const useSettingStore = defineStore(
         token:
           "c3Vic3RyYXRlLWNUS0Vkbm5uUWdKY1V2eDZ4QXdGV2hlcTZLcXk4b3lwQUdrV3ZteWhTUVRWTnVvYXU6MHg2ZWNjOWMwZWZiNTc2Y2NiMjE5ZWJkNzJjYmExYzA3YmJkOGEwMTcyZmQ4NGNlM2Y3MTQ4MThjODhjMjZhOTdmNWRkZTAwZGQwMzY3MjJhODA1NjUxMjg2OWRiYjU0OGY4MTNiNzUyY2E1NmE5MDc1ODU2OTA5MjIzMjEyMWU4OA==",
       },
+      skipExistStorageItem: true,
       server: {
         pin: {
           use: "pin.crustcode.com",

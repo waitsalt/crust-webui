@@ -25,6 +25,7 @@ interface FolderItem {
 
 interface Setting {
   user: User;
+  skipExistStorageItem: boolean,
   server: {
     upload: {
       use: string,

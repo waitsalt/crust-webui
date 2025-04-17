@@ -3,7 +3,7 @@ import { uploadFile } from "@/service/upload";
 import { useSettingStore } from "@/store/setting";
 import { useTaskStore } from "@/store/task";
 import type { Task } from "@/type/task";
-import { formatSize, taskFromFile } from "@/util";
+import { formatSize, getFullPath, taskFromFile } from "@/util";
 import { computed } from "vue";
 import { ref } from "vue";
 import { AiOutlineRedo, AiOutlineDelete } from "vue-icons-plus/ai";
@@ -66,6 +66,14 @@ const handleFileUpload = (event: Event) => {
     const path = window.location.pathname;
     if (files) {
         for (const file of files) {
+            const fullPath = getFullPath(path, file.name);
+            const storageItem = settingStore.getStorageItem(fullPath);
+            if (
+                storageItem !== null &&
+                settingStore.setting.skipExistStorageItem === true
+            ) {
+                continue;
+            }
             const task: Task = taskFromFile(path, file);
             taskStore.taskMap.set(task.id, task);
             taskStore.uploadPool.add(() => uploadFile(task));
@@ -79,6 +87,14 @@ const handleFolderUpload = (event: Event) => {
     const path = document.location.pathname;
     if (files) {
         for (const file of files) {
+            const fullPath = getFullPath(path, file.webkitRelativePath);
+            const storageItem = settingStore.getStorageItem(fullPath);
+            if (
+                storageItem !== null &&
+                settingStore.setting.skipExistStorageItem === true
+            ) {
+                continue;
+            }
             const task: Task = taskFromFile(path, file);
             taskStore.taskMap.set(task.id, task);
             taskStore.uploadPool.add(() => uploadFile(task));
@@ -105,10 +121,14 @@ const deleteTask = (type: selectPartType, id: string) => {
             taskStore.taskMap.delete(id);
             break;
         case "success":
-            taskStore.successTaskList = taskStore.successTaskList.filter(task => task.id !== id);
+            taskStore.successTaskList = taskStore.successTaskList.filter(
+                (task) => task.id !== id,
+            );
             break;
         case "failed":
-            taskStore.failedTaskList = taskStore.failedTaskList.filter(task => task.id !== id);
+            taskStore.failedTaskList = taskStore.failedTaskList.filter(
+                (task) => task.id !== id,
+            );
             break;
     }
 };
@@ -121,9 +141,9 @@ const retryTask = (id: string) => {
     taskStore.taskMap.set(task.id, task);
 
     if (task.upload.status === "error") {
-        taskStore.uploadPool.add(() => uploadFile(task))
+        taskStore.uploadPool.add(() => uploadFile(task));
     } else if (task.pin.status === "error") {
-        taskStore.pinPool.add(() => uploadFile(task))
+        taskStore.pinPool.add(() => uploadFile(task));
     }
 };
 
@@ -134,14 +154,13 @@ const retryAllTasks = () => {
             taskStore.taskMap.set(task.id, task);
 
             if (task.upload.status === "error") {
-                taskStore.uploadPool.add(() => uploadFile(task))
+                taskStore.uploadPool.add(() => uploadFile(task));
             } else if (task.pin.status === "error") {
-                taskStore.pinPool.add(() => uploadFile(task))
+                taskStore.pinPool.add(() => uploadFile(task));
             }
         }
     }
 };
-
 </script>
 
 <template>

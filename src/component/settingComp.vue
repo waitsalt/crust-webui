@@ -163,6 +163,15 @@ const chooseServerUse = (type: selectPartType, host: string) => {
                     <input type="text" id="userTokenInput" v-model="userToken" />
                     <button @click="saveUser('token')">保存</button>
                 </div>
+                <div class="other">
+                    <div>是否跳过已存在文件</div>
+                    <div class="chooseSkip">
+                        <button class="chooseSelectionBtn" @click="settingStore.setting.skipExistStorageItem = true"
+                            :class="{ chooseSelectionBtnActive: settingStore.setting.skipExistStorageItem === true }">是</button>
+                        <button class="chooseSelectionBtn" @click="settingStore.setting.skipExistStorageItem = false"
+                            :class="{ chooseSelectionBtnActive: settingStore.setting.skipExistStorageItem === false }">否</button>
+                    </div>
+                </div>
             </div>
             <div class="showSelection" v-show="selectionChoose === 'upload'">
                 <div class="serverUse">当先使用: {{ uploadUse }}</div>
@@ -300,15 +309,27 @@ const chooseServerUse = (type: selectPartType, host: string) => {
     padding: 20px;
 }
 
+
+.showSelection .other {
+    display: flex;
+    gap: 20px;
+    align-content: center;
+}
+
+.showSelection .chooseSkip {
+    display: flex;
+    gap: 5px;
+}
+
 /* 用户信息部分 */
 .userInfo {
     display: flex;
     align-items: center;
     margin-bottom: 15px;
+    gap: 10px;
 }
 
 .userInfo label {
-    width: 80px;
     font-weight: 500;
     color: white;
 }
@@ -318,7 +339,6 @@ const chooseServerUse = (type: selectPartType, host: string) => {
     padding: 8px 12px;
     border: none;
     border-radius: 4px;
-    margin-right: 10px;
     transition: border-color 0.3s;
 
     color: white;
