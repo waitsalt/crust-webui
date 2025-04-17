@@ -1,6 +1,6 @@
 <script lang="ts" setup>
 import { useSettingStore } from "@/store/setting";
-import { downloadFile, getFullPath } from "@/util";
+import { downloadFile } from "@/util";
 
 type functionType =
     | "search"

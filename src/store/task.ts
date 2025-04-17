@@ -6,6 +6,7 @@ import { ref } from "vue";
 
 export const useTaskStore = defineStore("task", () => {
   const uploadPool = ref<TaskPool>(new TaskPool());
+  const localPool = ref<TaskPool>(new TaskPool());
   const pinPool = ref<TaskPool>(new TaskPool());
   const taskMap = ref<Map<string, Task>>(new Map());
   const successTaskList = ref<Task[]>([]);
@@ -47,6 +48,7 @@ export const useTaskStore = defineStore("task", () => {
 
   return {
     uploadPool,
+    localPool,
     pinPool,
     taskMap,
     successTaskList,

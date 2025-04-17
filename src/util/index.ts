@@ -1,3 +1,4 @@
+import router from "@/router";
 import type { Task } from "@/type/task";
 
 function getFullPath(base: string, path: string) {

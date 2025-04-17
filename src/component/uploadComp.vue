@@ -1,13 +1,16 @@
 <script lang="ts" setup>
 import { pin } from "@/service/pin";
+import { localPin } from "@/service/localPin";
 import { uploadFile } from "@/service/upload";
 import { useSettingStore } from "@/store/setting";
 import { useTaskStore } from "@/store/task";
+import type { FileItem, FolderItem } from "@/type/setting";
 import type { Task } from "@/type/task";
 import { formatSize, getFullPath, taskFromFile } from "@/util";
 import { computed } from "vue";
 import { ref } from "vue";
 import { AiOutlineRedo, AiOutlineDelete } from "vue-icons-plus/ai";
+import router from "@/router";
 
 const taskStore = useTaskStore();
 const settingStore = useSettingStore();
@@ -24,7 +27,7 @@ const currentTask = computed(() => {
     }
 });
 
-type selectPartType = "doing" | "success" | "failed";
+type selectPartType = "doing" | "success" | "failed" | "local";
 const selectionChoose = ref<selectPartType>("doing");
 const chooseSelection = (choose: selectPartType) => {
     selectionChoose.value = choose;
@@ -64,7 +67,7 @@ const triggerFolderUpload = () => {
 const handleFileUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const files = input.files;
-    const path = window.location.pathname;
+    const path = router.currentRoute.value.path;
     if (files) {
         for (const file of files) {
             const fullPath = getFullPath(path, file.name);
@@ -86,7 +89,7 @@ const handleFileUpload = (event: Event) => {
 const handleFolderUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
     const files = input.files;
-    const path = document.location.pathname;
+    const path = router.currentRoute.value.path;
     if (files) {
         for (const file of files) {
             const fullPath = getFullPath(path, file.webkitRelativePath);
@@ -163,6 +166,64 @@ const retryAllTasks = () => {
         }
     }
 };
+
+const localTaskList = computed(() => {
+    type result = { fullPath: string; fileItem: FileItem };
+    let taskList: result[] = [];
+
+    function fromFolder(folderPath: string, folder: FolderItem) {
+        for (const storageItem of folder.children) {
+            if (
+                storageItem.type === "file" &&
+                storageItem.status !== "success"
+            ) {
+                taskList.push({
+                    fullPath: `${folderPath}/${storageItem.name}`,
+                    fileItem: storageItem,
+                });
+            } else if (
+                storageItem.type === "folder" &&
+                storageItem.children.length > 0
+            ) {
+                fromFolder(`${folderPath}/${storageItem.name}`, storageItem);
+            }
+        }
+    }
+    for (const storageItem of settingStore.setting.storage.children) {
+        if (storageItem.type === "file" && storageItem.status !== "success") {
+            taskList.push({
+                fullPath: `/${storageItem.name}`,
+                fileItem: storageItem,
+            });
+        } else if (
+            storageItem.type === "folder" &&
+            storageItem.children.length > 0
+        ) {
+            fromFolder(`/${storageItem.name}`, storageItem);
+        }
+    }
+    return taskList;
+});
+
+const retryLocalTask = (localTask: {
+    fullPath: string;
+    fileItem: FileItem;
+}) => {
+    localTask.fileItem.status = "doing";
+    taskStore.localPool.add(() =>
+        localPin(localTask.fullPath, localTask.fileItem),
+    );
+};
+
+const retryAllLocalTasks = () => {
+    for (const localTask of localTaskList.value)
+        if (localTask !== undefined) {
+            localTask.fileItem.status = "doing";
+            taskStore.localPool.add(() =>
+                localPin(localTask.fullPath, localTask.fileItem),
+            );
+        }
+};
 </script>
 
 <template>
@@ -183,6 +244,11 @@ const retryAllTasks = () => {
                     chooseSelectionBtnActive: selectionChoose === 'failed',
                 }" @click="chooseSelection('failed')">
                     失败项 ({{ taskStore.failedTaskList.length }})
+                </button>
+                <button class="chooseSelectionBtn" :class="{
+                    chooseSelectionBtnActive: selectionChoose === 'failed',
+                }" @click="chooseSelection('local')">
+                    本地任务 ({{ localTaskList.length }})
                 </button>
             </div>
             <div class="rightSelectionContainer">
@@ -209,9 +275,14 @@ const retryAllTasks = () => {
                         清空列表
                     </button>
                 </div>
+                <div class="rightSelection" v-show="selectionChoose === 'local'">
+                    <button class="chooseSelectionBtn" @click="retryAllLocalTasks()">
+                        重试全部
+                    </button>
+                </div>
             </div>
         </div>
-        <div class="chooseSelectionShow">
+        <div class="chooseSelectionShow" v-show="selectionChoose !== 'local'">
             <div class="showThead">
                 <div class="showName">文件名</div>
                 <div class="showSize">大小</div>
@@ -253,6 +324,56 @@ const retryAllTasks = () => {
                             <AiOutlineDelete />
                         </button>
                         <button class="retryAction" v-show="selectionChoose === 'failed'" @click="retryTask(task.id)">
+                            <AiOutlineRedo />
+                        </button>
+                    </div>
+                </div>
+
+                <div class="emptyState" v-if="currentTask.length === 0">
+                    暂无{{
+                        selectionChoose === "doing"
+                            ? "进行中"
+                            : selectionChoose === "success"
+                                ? "已完成"
+                                : "失败"
+                    }}的任务
+                </div>
+            </div>
+        </div>
+        <div class="chooseSelectionShow" v-show="selectionChoose === 'local'">
+            <div class="showThead">
+                <div class="showName">文件名</div>
+                <div class="showSize">大小</div>
+                <div class="showStatus">状态</div>
+                <div class="showAction">操作</div>
+            </div>
+            <div class="showBody">
+                <div class="showItem" v-for="localTask in localTaskList" :key="localTask.fullPath">
+                    <div class="showName">{{ localTask.fileItem.name }}</div>
+                    <div class="showSize">
+                        {{ formatSize(localTask.fileItem.size) }}
+                    </div>
+                    <div class="showStatus">
+                        <span class="statusTag" :class="{
+                            statusSuccess:
+                                localTask.fileItem.status === 'success',
+                            statusError:
+                                localTask.fileItem.status === 'failed',
+                            statusProcessing:
+                                localTask.fileItem.status === 'doing',
+                        }">
+                            {{
+                                localTask.fileItem.status === "success"
+                                    ? "成功"
+                                    : localTask.fileItem.status === "doing"
+                                        ? "进行中"
+                                        : "失败"
+                            }}
+                        </span>
+                    </div>
+                    <div class="showAction">
+                        <button class="retryAction" v-show="selectionChoose === 'local'"
+                            @click="retryLocalTask(localTask)">
                             <AiOutlineRedo />
                         </button>
                     </div>

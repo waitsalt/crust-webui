@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import router from "@/router";
 import { useSettingStore } from "@/store/setting";
 import { getFullPath } from "@/util";
 
@@ -21,7 +22,7 @@ const settingStore = useSettingStore();
 const delConfirm = () => {
     for (let i = 0; i < props.selectStorageItemList.length; i++) {
         const fullPath = getFullPath(
-            window.location.pathname,
+            router.currentRoute.value.path,
             props.selectStorageItemList[i],
         );
         settingStore.delStorageItem(fullPath);

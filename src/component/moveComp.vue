@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import router from "@/router";
 import { useSettingStore } from "@/store/setting";
 import { getFullPath } from "@/util";
 import { computed } from "vue";
@@ -16,7 +17,9 @@ type functionType =
     | "setting"
     | null;
 
-const targetPath = ref<string>(decodeURIComponent(window.location.pathname));
+const targetPath = ref<string>(
+    decodeURIComponent(router.currentRoute.value.path),
+);
 const targetPathItemList = computed(() => {
     const path = targetPath.value;
     const segments = path.split("/").filter((item) => item !== "");
@@ -52,7 +55,13 @@ const props = defineProps<{
 
 const moveConfirm = () => {
     for (let i = 0; i < props.selectStorageItemList.length; i++) {
-        settingStore.moveStorageItem(getFullPath(window.location.pathname, props.selectStorageItemList[i]), getFullPath(targetPath.value, props.selectStorageItemList[i]))
+        settingStore.moveStorageItem(
+            getFullPath(
+                router.currentRoute.value.path,
+                props.selectStorageItemList[i],
+            ),
+            getFullPath(targetPath.value, props.selectStorageItemList[i]),
+        );
     }
     props.activeFunction(null);
 };

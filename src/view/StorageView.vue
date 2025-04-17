@@ -28,6 +28,7 @@ import settingComp from "@/component/settingComp.vue";
 import deleteComp from "@/component/deleteComp.vue";
 import downloadComp from "@/component/downloadComp.vue";
 import MoveComp from "@/component/moveComp.vue";
+import router from "@/router";
 
 // 基础元素
 const route = useRoute();
@@ -38,14 +39,14 @@ const currentStorageItem = ref<StorageItem | null>(null);
 const currentPathItemList = ref<{ name: string; path: string }[]>([]);
 
 const updateCurrentStorageItem = () => {
-    const path = decodeURIComponent(window.location.pathname);
+    const path = router.currentRoute.value.path;
     const storageItem = settingStore.getStorageItem(path);
     currentStorageItem.value = storageItem;
 };
 const updateCurrentPathItemList = () => {
-    const path = decodeURIComponent(window.location.pathname);
+    const path = router.currentRoute.value.path;
     const segments = path.split("/").filter((item) => item !== "");
-    const crumbs = [{ name: "home", path: "/" }];
+    const crumbs = [{ name: "home", path: "/" }]; getFullPath
 
     let accumulatedPath = "";
     for (const segment of segments) {
@@ -56,13 +57,6 @@ const updateCurrentPathItemList = () => {
         });
     }
     currentPathItemList.value = crumbs;
-};
-
-// 搜索
-const searchType = ref<"all" | "file" | "folder">("all");
-const searchKeyword = ref<string>("");
-const searchStorage = () => {
-    const searchResult = settingStore.searchStorageItem(searchKeyword.value);
 };
 
 // 选择框
@@ -123,10 +117,11 @@ onMounted(async () => {
 
 // 变量监听
 watch(
-    () => route.path,
+    () => router.currentRoute.value.path,
     async () => {
         updateCurrentStorageItem();
         updateCurrentPathItemList();
+        console.log(router.currentRoute.value.fullPath);
         changeTitle();
         selectStorageItemList.value = [];
     },
@@ -138,9 +133,9 @@ watch(
         <div class="appHeader">
             <div class="leftSection">
                 <div class="logo">
-                    <router-link to="/">
+                    <a @click="router.push('/')">
                         <img src="/src/asset/image/favicon.ico" class="logo" alt="Logo" />
-                    </router-link>
+                    </a>
                 </div>
                 <div class="pathShow">
                     <template v-for="(crumb, index) in currentPathItemList" :key="crumb.path">
@@ -205,11 +200,8 @@ watch(
                         </div>
                         <div class="storageContent">
                             <div class="childenItem" v-for="childenStorageItem in currentStorageItem.children" @click="
-                                $router.push(
-                                    getFullPath(
-                                        route.path,
-                                        childenStorageItem.name,
-                                    ),
+                                router.push(
+                                    getFullPath(router.currentRoute.value.path, childenStorageItem.name)
                                 )
                                 ">
                                 <input class="storageSelect" type="checkbox" :checked="selectStorageItemList.includes(
