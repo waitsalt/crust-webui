@@ -121,7 +121,6 @@ watch(
     async () => {
         updateCurrentStorageItem();
         updateCurrentPathItemList();
-        console.log(router.currentRoute.value.fullPath);
         changeTitle();
         selectStorageItemList.value = [];
     },
@@ -163,10 +162,10 @@ watch(
                         <div class="fileShowInfo">
                             <span class="fileShowSize">{{
                                 formatSize(currentStorageItem.size)
-                            }}</span>
+                                }}</span>
                             <span class="fileShowDate">{{
                                 formatTimestamp(currentStorageItem.created)
-                            }}</span>
+                                }}</span>
                         </div>
                     </div>
 
@@ -231,10 +230,10 @@ watch(
                                 </label>
                                 <label class="storageSize">{{
                                     formatSize(childenStorageItem.size)
-                                }}</label>
+                                    }}</label>
                                 <label class="storageUpdateTime">{{
                                     formatTimestamp(childenStorageItem.created)
-                                }}</label>
+                                    }}</label>
                             </div>
                         </div>
                     </div>
