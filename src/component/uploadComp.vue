@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import { pin } from "@/service/pin";
 import { uploadFile } from "@/service/upload";
 import { useSettingStore } from "@/store/setting";
 import { useTaskStore } from "@/store/task";
@@ -76,6 +77,7 @@ const handleFileUpload = (event: Event) => {
             }
             const task: Task = taskFromFile(path, file);
             taskStore.taskMap.set(task.id, task);
+
             taskStore.uploadPool.add(() => uploadFile(task));
         }
     }
@@ -143,7 +145,7 @@ const retryTask = (id: string) => {
     if (task.upload.status === "error") {
         taskStore.uploadPool.add(() => uploadFile(task));
     } else if (task.pin.status === "error") {
-        taskStore.pinPool.add(() => uploadFile(task));
+        taskStore.pinPool.add(() => pin(task));
     }
 };
 
@@ -156,7 +158,7 @@ const retryAllTasks = () => {
             if (task.upload.status === "error") {
                 taskStore.uploadPool.add(() => uploadFile(task));
             } else if (task.pin.status === "error") {
-                taskStore.pinPool.add(() => uploadFile(task));
+                taskStore.pinPool.add(() => pin(task));
             }
         }
     }
