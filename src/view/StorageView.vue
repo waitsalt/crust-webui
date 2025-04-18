@@ -192,10 +192,10 @@ watch(
                         <div class="fileShowInfo">
                             <span class="fileShowSize">{{
                                 formatSize(currentStorageItem.size)
-                            }}</span>
+                                }}</span>
                             <span class="fileShowDate">{{
                                 formatTimestamp(currentStorageItem.created)
-                            }}</span>
+                                }}</span>
                         </div>
                     </div>
 
@@ -209,7 +209,7 @@ watch(
                         </button>
                         <button class="fileShowActionDownload primary" @click="
                             downloadFile(
-                                `https://${settingStore.setting.server.download.use}/ipfs/${currentStorageItem.cid}?filename=${currentStorageItem.name}`,
+                                `https://${settingStore.setting.server.download.use}/ipfs/${currentStorageItem.cid}?filename=${currentStorageItem.name}&download=true`,
                                 currentStorageItem.name,
                             )
                             ">
@@ -263,10 +263,10 @@ watch(
                                 </label>
                                 <label class="storageSize">{{
                                     formatSize(childenStorageItem.size)
-                                }}</label>
+                                    }}</label>
                                 <label class="storageUpdateTime">{{
                                     formatTimestamp(childenStorageItem.created)
-                                }}</label>
+                                    }}</label>
                             </div>
                         </div>
                     </div>
